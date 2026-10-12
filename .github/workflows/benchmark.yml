@@ -1,0 +1,29 @@
+name: Benchmark Suite
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  benchmark:
+    name: Micro-benchmarks & Allocations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+      - name: Install C++ Build Tools
+        run: sudo apt-get update && sudo apt-get install -y build-essential
+      - name: Run Benchmarks (CGO Mode)
+        env:
+          CGO_ENABLED: 1
+        run: |
+          go test -bench=. -benchmem -run=^$ -benchtime=3s ./... | tee bench_cgo.txt
+      - name: Run Benchmarks (Pure-Go Mode)
+        env:
+          CGO_ENABLED: 0
+        run: |
+          go test -bench=. -benchmem -run=^$ -benchtime=3s ./... | tee bench_pure.txt

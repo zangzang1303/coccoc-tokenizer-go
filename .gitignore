@@ -1,0 +1,20 @@
+# Binaries & build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.a
+*.test
+*.out
+dist/
+
+# Large nontone dictionary (>200MB, not tracked in git)
+nontone_pair_freq_map.dump
+dicts/nontone_pair_freq_map.dump
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
