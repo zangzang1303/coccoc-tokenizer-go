@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	coccoc "github.com/vntk/coccoc-tokenizer-go"
+	coccoc "github.com/zangzang1303/coccoc-tokenizer-go"
 )
 
 func main() {

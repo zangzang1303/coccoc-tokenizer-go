@@ -6,7 +6,7 @@ import (
 	"log"
 	"strings"
 
-	coccoc "github.com/vntk/coccoc-tokenizer-go"
+	coccoc "github.com/zangzang1303/coccoc-tokenizer-go"
 )
 
 // OpenSearchMessageDocument cấu trúc tài liệu đồng bộ chuẩn Task 1

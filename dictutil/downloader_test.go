@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/vntk/coccoc-tokenizer-go/dictutil"
+	"github.com/zangzang1303/coccoc-tokenizer-go/dictutil"
 )
 
 func TestDefaultCacheDir(t *testing.T) {

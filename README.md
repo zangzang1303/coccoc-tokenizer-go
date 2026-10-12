@@ -1,9 +1,9 @@
 # Cốc Cốc Tokenizer for Go (`coccoc-tokenizer-go`)
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/vntk/coccoc-tokenizer-go.svg)](https://pkg.go.dev/github.com/vntk/coccoc-tokenizer-go)
-[![Go Report Card](https://goreportcard.com/badge/github.com/vntk/coccoc-tokenizer-go)](https://goreportcard.com/report/github.com/vntk/coccoc-tokenizer-go)
+[![Go Reference](https://pkg.go.dev/badge/github.com/zangzang1303/coccoc-tokenizer-go.svg)](https://pkg.go.dev/github.com/zangzang1303/coccoc-tokenizer-go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/zangzang1303/coccoc-tokenizer-go)](https://goreportcard.com/report/github.com/zangzang1303/coccoc-tokenizer-go)
 [![License: LGPL v2.1](https://img.shields.io/badge/License-LGPL_v2.1-blue.svg)](LICENSE)
-[![CI Tests](https://github.com/vntk/coccoc-tokenizer-go/actions/workflows/test.yml/badge.svg)](https://github.com/vntk/coccoc-tokenizer-go/actions/workflows/test.yml)
+[![CI Tests](https://github.com/zangzang1303/coccoc-tokenizer-go/actions/workflows/test.yml/badge.svg)](https://github.com/zangzang1303/coccoc-tokenizer-go/actions/workflows/test.yml)
 
 Thư viện tách từ tiếng Việt chất lượng cao (Production-Grade Vietnamese Word Segmenter) dành cho ngôn ngữ Go, đóng gói độc lập động cơ C++ **Cốc Cốc Tokenizer** kết hợp kiến trúc **Dual-Mode (CGO Engine & Pure-Go Fallback)**.
 
@@ -15,31 +15,191 @@ Thư viện tách từ tiếng Việt chất lượng cao (Production-Grade Viet
 * 🛡️ **Kiến Trúc Dual-Mode Thông Minh**:
   * **CGO Enabled**: Tự động liên kết C++ engine với cấu trúc Trie nén nhị phân (`.dump`) siêu tốc.
   * **Pure-Go Fallback (`CGO_ENABLED=0`)**: Tự động chuyển đổi sang thuật toán Forward Maximum Matching (FMM) trên từ điển nhúng sẵn (`//go:embed`) mà **không cần GCC hay bất kỳ dependency bên ngoài nào**. Chạy mượt mà trên Windows, macOS, Alpine Linux.
-* 🔒 **Zero Memory Leak**: Cơ chế giải phóng con trỏ C/C++ tức thời (`defer free`), vượt qua bài kiểm tra stress-test 1.000.000 requests với mức RAM hoàn toàn phẳng.
+* 🔒 **Zero Memory Leak**: Cơ chế giải phóng con trỏ C/C++ tức thời (`defer free`), vượt qua bài kiểm tra stress-test 50.000 requests với mức RAM hoàn toàn phẳng.
 * 🧵 **Thread-Safe & Lockless**: Hỗ trợ gọi đồng thời từ hàng nghìn Goroutines mà không bị nghẽn khóa (zero contention).
 * 🎯 **API Chuẩn Idiomatic Go**: Thiết kế theo Functional Options Pattern, cung cấp cả `Segment`, `Tokenize`, và `TokenizeFull` (kèm byte offsets và loại từ).
 * 📦 **Quản Lý Từ Điển Tự Động**: Tích hợp package con `dictutil` tự động tìm kiếm hoặc tải dữ liệu từ điển từ GitHub Release.
 
 ---
 
-## 📦 Cài Đặt
+## 📦 HƯỚNG DẪN CÀI ĐẶT CHI TIẾT (INSTALLATION GUIDE)
+
+Thư viện hỗ trợ **hai chế độ cài đặt và vận hành** tùy theo nhu cầu môi trường của bạn:
+
+| Chế độ | Môi trường mục tiêu | Yêu cầu Compiler | Tốc độ xử lý | Từ điển cần nạp |
+| :--- | :--- | :---: | :---: | :--- |
+| **Pure-Go Mode** | Local Dev, Windows, macOS, Alpine Scratch | **Không cần C++ (Chỉ cần Go)** | ~22.000 câu/s | Đã nhúng sẵn (`words.txt` 500KB) |
+| **CGO Native Mode** | Linux Production Server, Docker Kubernetes | Cần `gcc`/`g++` $\ge 4.8$ | ~830.000 câu/s | Tệp nhị phân `.dump` (~45MB) |
+
+---
+
+### Bước 1: Tải module vào dự án Go
+
+Mở terminal trong thư mục dự án Go của bạn và chạy lệnh:
 
 ```bash
-go get -u github.com/vntk/coccoc-tokenizer-go
+go get -u github.com/zangzang1303/coccoc-tokenizer-go
+```
+
+File `go.mod` của bạn sẽ tự động thêm dependency:
+```go
+require github.com/zangzang1303/coccoc-tokenizer-go v1.0.0
 ```
 
 ---
 
-## ⚡ Bắt Đầu Nhanh (Quickstart)
+### Bước 2: Lựa chọn chế độ cài đặt môi trường
 
-Chỉ 3 dòng code để tách từ tiếng Việt:
+#### 👉 Lựa chọn A: Cài đặt chế độ Pure-Go (Khuyên dùng cho Local Dev / Windows / Mac)
+* **Ưu điểm**: Không cần cài GCC, không cần cài CMake, không cần tải bất kỳ file ngoài nào.
+* **Cách sử dụng**:
+  Chỉ cần gõ lệnh chạy như thông thường, Go sẽ tự động dùng Pure-Go engine:
+  ```bash
+  go run main.go
+  ```
+  Hoặc ép kiểu build tĩnh không phụ thuộc CGO:
+  ```bash
+  # Linux / macOS
+  CGO_ENABLED=0 go build -o myapp main.go
+
+  # Windows PowerShell
+  $env:CGO_ENABLED=0; go build -o myapp.exe main.go
+  ```
+
+---
+
+#### 👉 Lựa chọn B: Cài đặt chế độ C++ CGO Native (Khuyên dùng cho Linux Production Server)
+Để kích hoạt tốc độ tối đa của Cốc Cốc C++ DATrie engine (~1.2 µs/câu), bạn cần chuẩn bị trình biên dịch C++ trên hệ điều hành:
+
+##### 1. Cài đặt C++ Build Tools:
+* **Ubuntu / Debian**:
+  ```bash
+  sudo apt-get update
+  sudo apt-get install -y build-essential
+  ```
+* **CentOS / RHEL / Amazon Linux**:
+  ```bash
+  sudo yum groupinstall -y "Development Tools"
+  ```
+* **Alpine Linux**:
+  ```bash
+  apk add --no-cache build-base g++ libstdc++
+  ```
+* **macOS**:
+  ```bash
+  xcode-select --install
+  ```
+* **Windows (nếu muốn CGO)**:
+  Cài đặt [MinGW-w64](https://www.mingw-w64.org/) hoặc [MSYS2](https://www.msys2.org/) và thêm thư mục `bin` chứa `gcc.exe`, `g++.exe` vào biến môi trường `PATH`.
+
+##### 2. Cài đặt dữ liệu từ điển nhị phân C++ (`.dump` files):
+Động cơ C++ CGO cần 2 tệp nhị phân nén:
+* `multiterm_trie.dump` (~24.5 MB)
+* `syllable_trie.dump` (~21.4 MB)
+
+Bạn có thể chuẩn bị từ điển bằng một trong các cách sau:
+
+* **Cách 1: Sử dụng thư mục `dicts/` có sẵn trong package**:
+  Nếu bạn clone repo hoặc copy thư mục `dicts/` vào ứng dụng, chỉ cần chỉ định:
+  ```go
+  tok, err := coccoc.New(coccoc.WithDictPath("./dicts"))
+  ```
+
+* **Cách 2: Tự động tải qua code (`dictutil`)**:
+  Sử dụng sub-package `dictutil` để tự động tải về thư mục cache hệ thống:
+  ```go
+  package main
+
+  import (
+      coccoc "github.com/zangzang1303/coccoc-tokenizer-go"
+      "github.com/zangzang1303/coccoc-tokenizer-go/dictutil"
+  )
+
+  func main() {
+      // Tự động tải từ điển về ~/.cache/coccoc/dicts nếu chưa có
+      cacheDir := dictutil.DefaultCacheDir()
+      _ = dictutil.EnsureDicts(cacheDir, "")
+
+      tok, err := coccoc.New(coccoc.WithDictPath(cacheDir))
+      // ...
+  }
+  ```
+
+* **Cách 3: Cài đặt vào thư mục hệ thống chuẩn Linux (`/usr/local/share/tokenizer/dicts`)**:
+  ```bash
+  # Tạo thư mục từ điển hệ thống
+  sudo mkdir -p /usr/local/share/tokenizer/dicts
+
+  # Tải bộ từ điển từ GitHub Release
+  curl -L -O https://github.com/zangzang1303/coccoc-tokenizer-go/releases/download/v1.0.0/coccoc_dicts.tar.gz
+
+  # Giải nén vào thư mục chuẩn
+  sudo tar -xzvf coccoc_dicts.tar.gz -C /usr/local/share/tokenizer/dicts/
+  ```
+
+* **Cách 4: Thiết lập biến môi trường `COCCOC_DICT_PATH`**:
+  ```bash
+  # Linux / macOS
+  export COCCOC_DICT_PATH="/usr/local/share/tokenizer/dicts"
+
+  # Windows PowerShell
+  $env:COCCOC_DICT_PATH="C:\coccoc\dicts"
+  ```
+  *(Khi có biến môi trường này, hàm `coccoc.New()` sẽ tự động tìm thấy mà không cần truyền tham số `WithDictPath`).*
+
+---
+
+### Bước 3: Xác thực cài đặt thành công (Verify Installation)
+
+Tạo file `test_install.go`:
 
 ```go
 package main
 
 import (
 	"fmt"
-	coccoc "github.com/vntk/coccoc-tokenizer-go"
+	coccoc "github.com/zangzang1303/coccoc-tokenizer-go"
+)
+
+func main() {
+	tok, err := coccoc.New(coccoc.WithFallbackToPureGo(true))
+	if err != nil {
+		panic(err)
+	}
+	defer tok.Close()
+
+	mode := "Pure-Go Engine (Zero-CGO)"
+	if tok.IsCGO() {
+		mode = "C++ Native CGO Engine"
+	}
+	fmt.Printf("✅ Cài đặt thành công! Đang kích hoạt: %s\n", mode)
+
+	result, _ := tok.Segment("Học sinh sinh viên Việt Nam đi uống cà phê sữa đá")
+	fmt.Printf("Kết quả tách từ: %s\n", result)
+}
+```
+
+Chạy thử nghiệm:
+```bash
+go run test_install.go
+```
+
+Output kỳ vọng:
+```
+✅ Cài đặt thành công! Đang kích hoạt: Pure-Go Engine (Zero-CGO)
+Kết quả tách từ: Học_sinh sinh_viên Việt_Nam đi uống cà_phê sữa_đá
+```
+
+---
+
+## ⚡ Bắt Đầu Nhanh (Quickstart)
+
+```go
+package main
+
+import (
+	"fmt"
+	coccoc "github.com/zangzang1303/coccoc-tokenizer-go"
 )
 
 func main() {
@@ -141,7 +301,7 @@ Thực hiện kiểm thử trên CPU Intel Core i7-12700H (14 Cores / 20 Threads
 | **Pure-Go Engine** | Câu ngắn (10 từ) | **45.1 µs** | **22.000 câu/s** | 42 KB/op |
 | **Pure-Go Engine** | Đoạn văn (50 từ) | **180.0 µs** | **5.500 đoạn/s** | 120 KB/op |
 
-* **Zero Memory Leak Guarantee**: Chạy stress-test 50.000 liên tục trong `leak_test.go` khẳng định mức tăng heap sau GC $\le 32\text{ KB}$, không rò rỉ bộ nhớ native C++.
+* **Zero Memory Leak Guarantee**: Chạy stress-test 50.000 lượt liên tục trong `leak_test.go` khẳng định mức tăng heap sau GC $\le 32\text{ KB}$, không rò rỉ bộ nhớ native C++.
 
 ---
 
@@ -192,47 +352,19 @@ ENTRYPOINT ["/server"]
 
 ---
 
-## 📁 Cấu Trúc Repository
+## ❓ Xử Lý Sự Cố Thường Gặp (Troubleshooting)
 
-```
-coccoc-tokenizer-go/
-├── .github/
-│   └── workflows/
-│       ├── test.yml            # CI: Chạy test trên Linux (CGO + Non-CGO), macOS, Windows
-│       ├── benchmark.yml       # CI: Đo lường regression về hiệu năng và allocations
-│       └── release.yml         # CI: Tự động đóng gói release assets
-├── csrc/                       # Toàn bộ mã nguồn C/C++ phục vụ biên dịch CGO
-│   ├── include/
-│   │   ├── coccoc_bridge.h     # Interface extern "C" chuẩn, không mangling
-│   │   └── tokenizer/          # Cốc Cốc C++ headers gốc & DATrie templates
-│   ├── src/
-│   │   └── coccoc_bridge.cpp   # Implementation của C bridge
-│   └── CMakeLists.txt          # Build dynamic/static lib rời khi cần
-├── dicts/                      # Dữ liệu từ điển nhị phân đã biên dịch sẵn
-│   ├── multiterm_trie.dump     # Từ điển âm tiết ghép (~24.5 MB)
-│   ├── syllable_trie.dump      # Từ điển âm tiết đơn (~21.4 MB)
-│   └── words.txt               # Danh sách 40.000 từ ghép tiếng Việt cho Pure-Go
-├── dictutil/                   # Tiện ích tìm kiếm & tải từ điển tự động
-│   ├── downloader.go
-│   └── downloader_test.go
-├── examples/                   # Ví dụ mẫu hướng dẫn tích hợp
-│   ├── basic/main.go           # Ví dụ cơ bản: Tách từ một câu đơn
-│   ├── http_server/main.go     # Ví dụ REST API Microservice
-│   └── opensearch_indexer/     # Ví dụ tiền xử lý nạp OpenSearch / Elasticsearch
-├── bridge.cpp                  # CGO compilation unit
-├── tokenizer.go                # Public API & Core struct
-├── tokenizer_cgo.go            # CGO implementation (//go:build cgo)
-├── tokenizer_cgo_stub.go       # Non-CGO stub (//go:build !cgo)
-├── tokenizer_pure.go           # Pure Go implementation (//go:embed words.txt)
-├── options.go                  # Functional Options Pattern
-├── types.go                    # Định nghĩa Token, Segment, Tokenizer Interface
-├── tokenizer_test.go           # Unit tests kiểm tra độ chính xác và đa luồng
-├── benchmark_test.go           # Benchmark đo ns/op, B/op, allocs/op
-├── leak_test.go                # Stress-test kiểm tra rò rỉ bộ nhớ
-├── go.mod
-├── LICENSE                     # LGPL-2.1 License
-└── README.md
-```
+1. **Lỗi `gcc: not found` hoặc `exec: "gcc": executable file not found in %PATH%`**:
+   * **Nguyên nhân**: Môi trường chưa cài GCC hoặc `CGO_ENABLED` đang bật trên Windows/Mac không có compiler.
+   * **Khắc phục**: 
+     - Chạy với `CGO_ENABLED=0 go run main.go` để dùng Pure-Go engine (không cần GCC).
+     - Hoặc thêm `coccoc.WithFallbackToPureGo(true)` vào code.
+
+2. **Lỗi `thư mục từ điển không tồn tại` trong CGO Mode**:
+   * **Khắc phục**: Thiết lập biến môi trường `export COCCOC_DICT_PATH=/path/to/dicts` hoặc dùng `coccoc.WithDictPath("./dicts")`.
+
+3. **Lỗi thiếu thư viện runtime trên Docker Alpine**:
+   * **Khắc phục**: Thêm lệnh `apk add --no-cache libstdc++` vào runtime image.
 
 ---
 

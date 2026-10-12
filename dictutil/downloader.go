@@ -19,7 +19,7 @@ const (
 	SyllableDumpFile  = "syllable_trie.dump"
 	NontoneDumpFile   = "nontone_pair_freq_map.dump"
 
-	DefaultReleaseURL = "https://github.com/vntk/coccoc-tokenizer-go/releases/download/v1.0.0/coccoc_dicts.tar.gz"
+	DefaultReleaseURL = "https://github.com/zangzang1303/coccoc-tokenizer-go/releases/download/v1.0.0/coccoc_dicts.tar.gz"
 )
 
 // DefaultCacheDir trả về thư mục cache từ điển mặc định theo hệ điều hành

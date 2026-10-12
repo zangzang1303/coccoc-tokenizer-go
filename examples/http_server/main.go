@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	coccoc "github.com/vntk/coccoc-tokenizer-go"
+	coccoc "github.com/zangzang1303/coccoc-tokenizer-go"
 )
 
 type TokenizeRequest struct {
