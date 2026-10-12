@@ -9,27 +9,27 @@ Thư viện tách từ tiếng Việt chất lượng cao (Production-Grade Viet
 
 ---
 
-## 🌟 Tính Năng Nổi Bật
+## Tính Năng Nổi Bật
 
-* 🚀 **Hiệu Năng Vượt Trội**: Xử lý hàng triệu tokens/giây khi kích hoạt C++ CGO Engine trong môi trường Linux/Docker.
-* 🛡️ **Kiến Trúc Dual-Mode Thông Minh**:
+* **Hiệu Năng Vượt Trội**: Xử lý hàng triệu tokens/giây khi kích hoạt C++ CGO Engine trong môi trường Linux/Docker.
+* **Kiến Trúc Dual-Mode Thông Minh**:
   * **CGO Enabled**: Tự động liên kết C++ engine với cấu trúc Trie nén nhị phân (`.dump`) siêu tốc.
   * **Pure-Go Fallback (`CGO_ENABLED=0`)**: Tự động chuyển đổi sang thuật toán Forward Maximum Matching (FMM) trên từ điển nhúng sẵn (`//go:embed`) mà **không cần GCC hay bất kỳ dependency bên ngoài nào**. Chạy mượt mà trên Windows, macOS, Alpine Linux.
-* 🔒 **Zero Memory Leak**: Cơ chế giải phóng con trỏ C/C++ tức thời (`defer free`), vượt qua bài kiểm tra stress-test 50.000 requests với mức RAM hoàn toàn phẳng.
-* 🧵 **Thread-Safe & Lockless**: Hỗ trợ gọi đồng thời từ hàng nghìn Goroutines mà không bị nghẽn khóa (zero contention).
-* 🎯 **API Chuẩn Idiomatic Go**: Thiết kế theo Functional Options Pattern, cung cấp cả `Segment`, `Tokenize`, và `TokenizeFull` (kèm byte offsets và loại từ).
-* 📦 **Quản Lý Từ Điển Tự Động**: Tích hợp package con `dictutil` tự động tìm kiếm hoặc tải dữ liệu từ điển từ GitHub Release.
+* **Zero Memory Leak**: Cơ chế giải phóng con trỏ C/C++ tức thời (`defer free`), vượt qua bài kiểm tra stress-test 50.000 requests với mức RAM hoàn toàn phẳng.
+* **Thread-Safe & Lockless**: Hỗ trợ gọi đồng thời từ hàng nghìn Goroutines mà không bị nghẽn khóa (zero contention).
+* **API Chuẩn Idiomatic Go**: Thiết kế theo Functional Options Pattern, cung cấp cả `Segment`, `Tokenize`, và `TokenizeFull` (kèm byte offsets và loại từ).
+* **Quản Lý Từ Điển Tự Động**: Tích hợp package con `dictutil` tự động tìm kiếm hoặc tải dữ liệu từ điển từ GitHub Release.
 
 ---
 
-## 📦 HƯỚNG DẪN CÀI ĐẶT CHI TIẾT (INSTALLATION GUIDE)
+## Hướng Dẫn Cài Đặt Chi Tiết (Installation Guide)
 
 Thư viện hỗ trợ **hai chế độ cài đặt và vận hành** tùy theo nhu cầu môi trường của bạn:
 
 | Chế độ | Môi trường mục tiêu | Yêu cầu Compiler | Tốc độ xử lý | Từ điển cần nạp |
 | :--- | :--- | :---: | :---: | :--- |
 | **Pure-Go Mode** | Local Dev, Windows, macOS, Alpine Scratch | **Không cần C++ (Chỉ cần Go)** | ~22.000 câu/s | Đã nhúng sẵn (`words.txt` 500KB) |
-| **CGO Native Mode** | Linux Production Server, Docker Kubernetes | Cần `gcc`/`g++` $\ge 4.8$ | ~830.000 câu/s | Tệp nhị phân `.dump` (~45MB) |
+| **CGO Native Mode** | Linux Production Server, Docker Kubernetes | Cần `gcc`/`g++` >= 4.8 | ~830.000 câu/s | Tệp nhị phân `.dump` (~45MB) |
 
 ---
 
@@ -50,7 +50,7 @@ require github.com/zangzang1303/coccoc-tokenizer-go v1.0.0
 
 ### Bước 2: Lựa chọn chế độ cài đặt môi trường
 
-#### 👉 Lựa chọn A: Cài đặt chế độ Pure-Go (Khuyên dùng cho Local Dev / Windows / Mac)
+#### Lựa chọn A: Cài đặt chế độ Pure-Go (Khuyên dùng cho Local Dev / Windows / Mac)
 * **Ưu điểm**: Không cần cài GCC, không cần cài CMake, không cần tải bất kỳ file ngoài nào.
 * **Cách sử dụng**:
   Chỉ cần gõ lệnh chạy như thông thường, Go sẽ tự động dùng Pure-Go engine:
@@ -68,7 +68,7 @@ require github.com/zangzang1303/coccoc-tokenizer-go v1.0.0
 
 ---
 
-#### 👉 Lựa chọn B: Cài đặt chế độ C++ CGO Native (Khuyên dùng cho Linux Production Server)
+#### Lựa chọn B: Cài đặt chế độ C++ CGO Native (Khuyên dùng cho Linux Production Server)
 Để kích hoạt tốc độ tối đa của Cốc Cốc C++ DATrie engine (~1.2 µs/câu), bạn cần chuẩn bị trình biên dịch C++ trên hệ điều hành:
 
 ##### 1. Cài đặt C++ Build Tools:
@@ -172,7 +172,7 @@ func main() {
 	if tok.IsCGO() {
 		mode = "C++ Native CGO Engine"
 	}
-	fmt.Printf("✅ Cài đặt thành công! Đang kích hoạt: %s\n", mode)
+	fmt.Printf("Cài đặt thành công! Đang kích hoạt: %s\n", mode)
 
 	result, _ := tok.Segment("Học sinh sinh viên Việt Nam đi uống cà phê sữa đá")
 	fmt.Printf("Kết quả tách từ: %s\n", result)
@@ -186,13 +186,13 @@ go run test_install.go
 
 Output kỳ vọng:
 ```
-✅ Cài đặt thành công! Đang kích hoạt: Pure-Go Engine (Zero-CGO)
+Cài đặt thành công! Đang kích hoạt: Pure-Go Engine (Zero-CGO)
 Kết quả tách từ: Học_sinh sinh_viên Việt_Nam đi uống cà_phê sữa_đá
 ```
 
 ---
 
-## ⚡ Bắt Đầu Nhanh (Quickstart)
+## Bắt Đầu Nhanh (Quickstart)
 
 ```go
 package main
@@ -220,7 +220,7 @@ func main() {
 
 ---
 
-## 🏗️ Kiến Trúc Hệ Thống (Dual-Mode Architecture)
+## Kiến Trúc Hệ Thống (Dual-Mode Architecture)
 
 ```
                        +-----------------------------+
@@ -246,7 +246,7 @@ func main() {
 
 ---
 
-## ⚙️ Cấu Hình Nâng Cao (Functional Options Pattern)
+## Cấu Hình Nâng Cao (Functional Options Pattern)
 
 ```go
 tok, err := coccoc.New(
@@ -273,7 +273,7 @@ defer tok.Close()
 
 ---
 
-## 🔍 Phân Tích Chi Tiết Kèm Offset (`TokenizeFull`)
+## Phân Tích Chi Tiết Kèm Offset (`TokenizeFull`)
 
 Phù hợp cho các bài toán highlight tìm kiếm, tính toán span vị trí từ hoặc trích xuất thông tin:
 
@@ -290,7 +290,7 @@ for _, info := range infos {
 
 ---
 
-## 📊 Kết Quả Benchmark Hiệu Năng
+## Kết Quả Benchmark Hiệu Năng
 
 Thực hiện kiểm thử trên CPU Intel Core i7-12700H (14 Cores / 20 Threads):
 
@@ -301,11 +301,11 @@ Thực hiện kiểm thử trên CPU Intel Core i7-12700H (14 Cores / 20 Threads
 | **Pure-Go Engine** | Câu ngắn (10 từ) | **45.1 µs** | **22.000 câu/s** | 42 KB/op |
 | **Pure-Go Engine** | Đoạn văn (50 từ) | **180.0 µs** | **5.500 đoạn/s** | 120 KB/op |
 
-* **Zero Memory Leak Guarantee**: Chạy stress-test 50.000 lượt liên tục trong `leak_test.go` khẳng định mức tăng heap sau GC $\le 32\text{ KB}$, không rò rỉ bộ nhớ native C++.
+* **Zero Memory Leak Guarantee**: Chạy stress-test 50.000 lượt liên tục trong `leak_test.go` khẳng định mức tăng heap sau GC <= 32 KB, không rò rỉ bộ nhớ native C++.
 
 ---
 
-## 🐳 Hướng Dẫn Docker Multi-stage Tối Ưu
+## Hướng Dẫn Docker Multi-stage Tối Ưu
 
 ### Dockerfile với C++ CGO Engine (Hiệu năng cực đại):
 
@@ -352,7 +352,7 @@ ENTRYPOINT ["/server"]
 
 ---
 
-## ❓ Xử Lý Sự Cố Thường Gặp (Troubleshooting)
+## Xử Lý Sự Cố Thường Gặp (Troubleshooting)
 
 1. **Lỗi `gcc: not found` hoặc `exec: "gcc": executable file not found in %PATH%`**:
    * **Nguyên nhân**: Môi trường chưa cài GCC hoặc `CGO_ENABLED` đang bật trên Windows/Mac không có compiler.
@@ -368,6 +368,6 @@ ENTRYPOINT ["/server"]
 
 ---
 
-## 📜 Giấy Phép Bản Quyền (License)
+## Giấy Phép Bản Quyền (License)
 
 Dự án phát hành theo giấy phép **LGPL-2.1 (GNU Lesser General Public License v2.1)** kế thừa từ mã nguồn Cốc Cốc Tokenizer gốc. Bạn có thể sử dụng tự do trong các dự án nguồn đóng hoặc thương mại theo các điều khoản của LGPL-2.1.
