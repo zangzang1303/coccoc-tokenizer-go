@@ -46,7 +46,7 @@ char* coccoc_tokenize_original(const char* text) {
 
     for (size_t i = 0; i < res.size(); ++i) {
         size_t punct_start = (i > 0) ? res[i - 1].original_end : 0;
-        size_t punct_len = res[i].original_start - punct_start;
+        size_t punct_len = (res[i].original_start > punct_start) ? (res[i].original_start - punct_start) : 0;
 
         if (punct_len > 0) {
             output += input.substr(punct_start, punct_len);
@@ -57,9 +57,11 @@ char* coccoc_tokenize_original(const char* text) {
         output += res[i].text;
     }
 
-    size_t last_end = res.back().original_end;
-    if (last_end < input.size()) {
-        output += input.substr(last_end);
+    if (!res.empty()) {
+        size_t last_end = res.back().original_end;
+        if (last_end < input.size()) {
+            output += input.substr(last_end);
+        }
     }
 
     char* result = (char*)malloc(output.size() + 1);

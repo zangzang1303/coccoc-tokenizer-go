@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <chrono>
 #include <atomic>
+#include <mutex>
 
 #include <tokenizer/config.h>
 #include "utf8.h"
@@ -424,7 +425,6 @@ int init_alphanumeric(const std::string &dict_path)
 	fin.open((dict_path + "/alphabetic").c_str());
 	if (!fin.is_open())
 	{
-		std::cerr << "Error openning file, alphabetic" << std::endl;
 		return VN_LANG_TOOL_DICT_NOT_FOUND;
 	}
 	fin >> n;
@@ -592,49 +592,62 @@ int init_transformer(const std::string &dict_path)
 	std::string line;
 
 	fin.open((dict_path + "/d_and_gi.txt").c_str());
-	if (!fin.is_open())
+	if (fin.is_open())
 	{
-		std::cerr << "Error openning file, d_and_gi.txt" << std::endl;
-		return VN_LANG_TOOL_DICT_NOT_FOUND;
+		while (getline(fin, line))
+		{
+			std::istringstream ss(line);
+			std::string from, to;
+			ss >> from >> to;
+			transformation[lower(from)] = lower(to);
+		}
+		fin.close();
 	}
-	while (getline(fin, line))
-	{
-		std::istringstream ss(line);
-		std::string from, to;
-		ss >> from >> to;
-		transformation[lower(from)] = lower(to);
-	}
-	fin.close();
 
 	fin.open((dict_path + "/i_and_y.txt").c_str());
-	if (!fin.is_open())
+	if (fin.is_open())
 	{
-		std::cerr << "Error openning file, i_and_y.txt" << std::endl;
-		return VN_LANG_TOOL_DICT_NOT_FOUND;
+		while (getline(fin, line))
+		{
+			std::istringstream ss(line);
+			std::string from, to;
+			ss >> from >> to;
+			transformation[lower(from)] = lower(to);
+		}
+		fin.close();
 	}
-	while (getline(fin, line))
-	{
-		std::istringstream ss(line);
-		std::string from, to;
-		ss >> from >> to;
-		transformation[lower(from)] = lower(to);
-	}
-	fin.close();
 
 	return VN_LANG_TOOL_INIT_OK;
 }
 
 int init(const std::string &dict_path, bool simple_mode = false)
 {
-	static std::atomic_flag once_flag;
-	if (once_flag.test_and_set()) return VN_LANG_TOOL_INIT_OK;
+	static bool is_initialized = false;
+	static std::mutex init_mutex;
+	std::lock_guard<std::mutex> lock(init_mutex);
+	if (is_initialized) return VN_LANG_TOOL_INIT_OK;
 
+	bool loaded = false;
 	if (!simple_mode)
 	{
-		if (0 > init_alphanumeric(dict_path)) return VN_LANG_TOOL_DICT_NOT_FOUND;
-		if (0 > init_transformer(dict_path)) return VN_LANG_TOOL_DICT_NOT_FOUND;
+		std::string search_path = dict_path;
+		std::ifstream test_f((search_path + "/alphabetic").c_str());
+		if (!test_f.is_open())
+		{
+			search_path = dict_path + "/vn_lang_tool";
+			test_f.open((search_path + "/alphabetic").c_str());
+		}
+		if (test_f.is_open())
+		{
+			test_f.close();
+			if (init_alphanumeric(search_path) >= 0)
+			{
+				init_transformer(search_path);
+				loaded = true;
+			}
+		}
 	}
-	else
+	if (!loaded)
 	{
 		init_simple_alphanumeric();
 	}
@@ -643,6 +656,7 @@ int init(const std::string &dict_path, bool simple_mode = false)
 	init_tone_forms();
 	init_hat_forms();
 
+	is_initialized = true;
 	return VN_LANG_TOOL_INIT_OK;
 }
 }

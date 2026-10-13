@@ -19,7 +19,7 @@ jobs:
       - name: Package Dictionary Assets
         run: |
           mkdir -p dist
-          tar -czf dist/coccoc_dicts.tar.gz -C dicts multiterm_trie.dump syllable_trie.dump words.txt
+          tar -czf dist/coccoc_dicts.tar.gz -C dicts .
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
