@@ -147,7 +147,7 @@ func (t *cgoTokenizer) TokenizeFull(text string) ([]TokenInfo, error) {
 			Text:      txt,
 			StartByte: int(cTok.start_byte),
 			EndByte:   int(cTok.end_byte),
-			Type:      TokenType(cTok.type),
+			Type:      TokenType(cTok.token_type),
 			SegType:   int(cTok.seg_type),
 		}
 	}

@@ -17,7 +17,7 @@ typedef struct {
     char* text;          // Chuỗi UTF-8 của token
     int start_byte;      // Vị trí byte bắt đầu trong văn bản gốc
     int end_byte;        // Vị trí byte kết thúc trong văn bản gốc
-    int type;            // 0: WORD, 1: NUMBER, 2: SPACE, 3: PUNCT
+    int token_type;      // 0: WORD, 1: NUMBER, 2: SPACE, 3: PUNCT
     int seg_type;        // Phân loại segment nội bộ Cốc Cốc
 } CoccocToken;
 

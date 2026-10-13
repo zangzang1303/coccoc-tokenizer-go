@@ -100,7 +100,7 @@ CoccocTokenResult* coccoc_tokenize_full(const char* text) {
     for (size_t i = 0; i < res.size(); ++i) {
         result->tokens[i].start_byte = res[i].original_start;
         result->tokens[i].end_byte = res[i].original_end;
-        result->tokens[i].type = res[i].type;
+        result->tokens[i].token_type = res[i].type;
         result->tokens[i].seg_type = res[i].seg_type;
 
         size_t len = res[i].text.size();
